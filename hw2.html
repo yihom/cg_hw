@@ -1,0 +1,347 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<style>
+#info {
+  position: absolute;
+  top: 2%;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #ffff00
+}
+
+body {
+  overflow: hidden;
+}
+
+
+</style>
+</head>
+
+<body> 
+<div id="info"> Hw2
+  <br/>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js"></script>
+<script src="https://dl.dropboxusercontent.com/u/3587259/Code/Threejs/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+
+
+
+<script> 
+
+var scene, renderer, camera;
+var controls;
+var mesh, angle = 0,
+  turn = false;
+  
+var head,headgoemetry,headmatrial;
+var lhand,lhandgeometry,lhandmatrial;
+var rhand,rhandgeometry,rhandmatrial;
+var body,bodygeometry,bodymatrial;
+var lleg,lleggeometry,llegmatrial;
+var rleg,rleggeometry,rlegmatrial;
+var bd,bd1,bd2,bd3;
+
+var headtext = [];
+var head_front,head_back,head_left,head_right,head_up,others;
+var bodytext = [];
+
+var gcontrols;
+
+init();
+animate();
+
+function texture(){ 
+	THREE.ImageUtils.crossOrigin = '';
+  head_front = THREE.ImageUtils.loadTexture( "http://i.imgur.com/YFIM7sI.png" );  
+	head_back = THREE.ImageUtils.loadTexture( "http://i.imgur.com/yzzYoCn.png" );
+  head_left = THREE.ImageUtils.loadTexture( "http://i.imgur.com/BnKgePF.png?1" );
+  head_right = THREE.ImageUtils.loadTexture( "http://i.imgur.com/Ecu9V7i.png" );
+  head_up = THREE.ImageUtils.loadTexture( "http://i.imgur.com/ArCZjkX.png?1" );
+  others = THREE.ImageUtils.loadTexture( "http://i.imgur.com/07SnvB3.png" );
+  
+  headtext.push(new THREE.MeshBasicMaterial( {map: head_right} ));
+  headtext.push(new THREE.MeshBasicMaterial( {map: head_left} ));
+  headtext.push(new THREE.MeshBasicMaterial( {map: head_up} ));
+  headtext.push(new THREE.MeshBasicMaterial( {map: others} ));
+  headtext.push(new THREE.MeshBasicMaterial( {map: head_front} ));
+  headtext.push(new THREE.MeshBasicMaterial( {map: head_back} ));  
+  
+	THREE.ImageUtils.crossOrigin = '';
+  body_front = THREE.ImageUtils.loadTexture( "http://i.imgur.com/e6bkftf.png" );  
+	body_back = THREE.ImageUtils.loadTexture( "http://i.imgur.com/WhlxVEZ.png" );
+  body_side = THREE.ImageUtils.loadTexture( "http://i.imgur.com/tOA63tK.png" );
+  
+  bodytext.push(new THREE.MeshBasicMaterial( {map: body_side} ));
+  bodytext.push(new THREE.MeshBasicMaterial( {map: body_side} ));
+  bodytext.push(new THREE.MeshBasicMaterial( {map: others} ));
+  bodytext.push(new THREE.MeshBasicMaterial( {map: others} ));
+  bodytext.push(new THREE.MeshBasicMaterial( {map: body_front} ));
+  bodytext.push(new THREE.MeshBasicMaterial( {map: body_back} ));  
+}
+
+function head(){
+	var shand;
+  head = new THREE.Object3D();
+  headgoemetry = new THREE.BoxGeometry( 15, 10.5, 10.5 );
+  //headmatrial = new THREE.MeshBasicMaterial( {map: headtext, side: THREE.DoubleSide} );
+  headmatrial = new THREE.MeshFaceMaterial(headtext);
+  shead = new THREE.Mesh( headgoemetry, headmatrial );
+  shead.position.y = 5.25;
+  head.add(shead);
+  head.position.y = 10.5+7.5;
+  scene.add( head );	
+}
+
+function body(){
+  bodygeometry = new THREE.BoxGeometry( 7.5, 10.5, 7.5 );
+  //bodymatrial = new THREE.MeshBasicMaterial( {color: 0x000000,wireframe: true} );
+  bodymatrial = new THREE.MeshFaceMaterial(bodytext);
+  body = new THREE.Mesh( bodygeometry, bodymatrial );
+
+  var bd,bd1,bd2,bd3;
+  var bdgeometry = new THREE.BoxGeometry( 7.5, 3, 0.1 );
+  //var bdmaterial = new THREE.MeshBasicMaterial( {color: 0x000000,wireframe: true} );
+  var bdmaterial = new THREE.MeshBasicMaterial( {map: others} );
+  var bd = new THREE.Mesh( bdgeometry, bdmaterial );
+  bd.position.y = -6.55;
+  bd.position.z = 4.2;
+  bd.rotation.x = -0.3;  
+  
+  var bd1geometry = new THREE.BoxGeometry( 7.5, 3, 0.1 );
+  //var bd1material = new THREE.MeshBasicMaterial( {color: 0x000000,wireframe: true} );
+  var bd1material = new THREE.MeshBasicMaterial( {map: others} );
+  var bd1 = new THREE.Mesh( bd1geometry, bd1material );
+  bd1.position.y = -6.55;
+  bd1.position.z = -4.2;
+  bd1.rotation.x = 0.3; 
+  
+  var bd2geometry = new THREE.BoxGeometry( 0.1, 3, 7.5 );
+  //var bd2material = new THREE.MeshBasicMaterial( {color: 0x000000,wireframe: true} );
+  var bd2material = new THREE.MeshBasicMaterial( {map: others} );
+  var bd2 = new THREE.Mesh( bd2geometry, bd2material );
+	bd2.rotation.z = -0.3;
+  bd2.position.y = -6.55;
+  bd2.position.x = -4.2;
+
+  var bd3geometry = new THREE.BoxGeometry( 0.1, 3, 7.5 );
+  //var bd3material = new THREE.MeshBasicMaterial( {color: 0x000000,wireframe: true} );
+  var bd3material = new THREE.MeshBasicMaterial( {map: others} );
+  var bd3 = new THREE.Mesh( bd3geometry, bd3material );
+	bd3.rotation.z = 0.3;
+  bd3.position.y = -6.55;
+  bd3.position.x = 4.2;
+
+  body.add(bd);
+  body.add(bd1);
+  body.add(bd2);  
+  body.add(bd3); 
+  body.position.y = 5.25+7.5;
+  scene.add(body);
+}
+
+function hand(){
+	var slhand,srhand;
+  lhand = new THREE.Object3D();
+  lhandgeometry = new THREE.BoxGeometry( 3, 8, 3 );
+  lhandmaterial = new THREE.MeshBasicMaterial( {map: others} );
+  slhand = new THREE.Mesh( lhandgeometry, lhandmaterial );
+  slhand.position.y = -8/2;
+ 	lhand.add(slhand);
+  lhand.position.y = 10.5+7;
+  lhand.position.x = -7.5/2-1.5;
+  scene.add(lhand);
+  
+  rhand = new THREE.Object3D();
+  rhandgeometry = new THREE.BoxGeometry( 3, 8, 3 );
+  rhandmaterial = new THREE.MeshBasicMaterial( {map: others} );
+  srhand = new THREE.Mesh( rhandgeometry, rhandmaterial );
+  srhand.position.y = -8/2;
+ 	rhand.add(srhand);
+  rhand.position.y = 10.5+7;
+  rhand.position.x = 7.5/2+1.5;  
+  scene.add(rhand);
+}
+
+function leg(){
+	var slleg,srleg;
+  lleg = new THREE.Object3D();
+  rleg = new THREE.Object3D();
+
+  lleggeometry = new THREE.BoxGeometry( 3, 7.5, 7.5 );
+  llegmaterial = new THREE.MeshBasicMaterial( {map: others} );
+  slleg = new THREE.Mesh( lleggeometry, llegmaterial );
+	slleg.position.y = -7.5/2;
+  lleg.position.y = 7.5;
+  lleg.position.x = -2.25;  
+  lleg.add(slleg);
+  scene.add(lleg);
+
+  rleggeometry = new THREE.BoxGeometry( 3, 7.5, 7.5 );
+  rlegmaterial = new THREE.MeshBasicMaterial( {map: others} );
+  srleg = new THREE.Mesh( rleggeometry, rlegmaterial );
+	srleg.position.y = -7.5/2;
+  rleg.add(srleg);
+  rleg.position.y = 7.5;
+  rleg.position.x = 2.25;
+  scene.add(rleg);
+
+}
+
+function model(){
+	head();
+	body();
+	hand();
+	leg();
+}
+var texture;
+function init() {
+  scene = new THREE.Scene();
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+  camera.position.z = 100;
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  var gridXZ = new THREE.GridHelper(100, 10);
+  gridXZ.setColors(new THREE.Color(0xff0000), new THREE.Color(0xffffff));
+  scene.add(gridXZ);
+  
+	texture();
+  
+	model();
+  
+  gcontrols = {
+  	headx: 0,
+    heady: 0,
+    lefthandz:0,
+    lefthandx:0,
+    righthandz:0,
+    righthandx:0,
+    leftlegz:0,
+    leftlegx:0,
+    rightlegz:0,
+    rightlegx:0,
+  }
+  var gui = new dat.GUI({load: loadJSON(), preset: 'Default'});
+	gui.remember (gcontrols);  
+  gui.add(gcontrols, 'headx', -0.3, 0.2);
+  gui.add(gcontrols, 'heady', -0.9, 0.9);
+  gui.add(gcontrols, 'lefthandz', -0.5, 0);
+  gui.add(gcontrols, 'lefthandx', -1.6, 1.3);
+  gui.add(gcontrols, 'righthandz', 0, 0.5);
+  gui.add(gcontrols, 'righthandx', -1.6, 1.3);
+  
+  gui.add(gcontrols, 'leftlegz', -0.2, 0);
+  gui.add(gcontrols, 'leftlegx', -0.2, 0.2);
+  gui.add(gcontrols, 'rightlegz', 0, 0.2);
+  gui.add(gcontrols, 'rightlegx', -0.2, 0.2);
+  
+  window.addEventListener('resize', onWindowResize, false);
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function loadJSON() {
+	return {  // must be return {    return \n { will become a new line
+  "preset": "pose1",
+  "remembered": {
+    "Default": {
+      "0": {
+          "headx": 0,
+          "heady": 0,
+          "lefthandz":0,
+          "lefthandx":0,
+          "righthandz":0,
+          "righthandx":0,
+          "leftlegz":0,
+          "leftlegx":0,
+          "rightlegz":0,
+          "rightlegx":0,
+      }
+    },
+    "pose1": {
+      "0": {
+          "headx": 0.1,
+          "heady": 0,
+          "lefthandz":-0.25,
+          "lefthandx":0.6,
+          "righthandz":0.25,
+          "righthandx":-0.6,
+          "leftlegz":0,
+          "leftlegx":-0.2,
+          "rightlegz":0,
+          "rightlegx":0.2,
+      }
+    },
+    "pose2": {
+      "0": {
+          "headx": -0.2,
+          "heady": 0,
+          "lefthandz":-0.5,
+          "lefthandx":0,
+          "righthandz":0.5,
+          "righthandx":0,
+          "leftlegz":-0.2,
+          "leftlegx":0,
+          "rightlegz":0.2,
+          "rightlegx":0,
+      }
+    },
+    "pose3": {
+      "0": {
+          "headx": -0.3,
+          "heady": 0,
+          "lefthandz":-0.25,
+          "lefthandx":-1.6,
+          "righthandz":0.25,
+          "righthandx":-1.6,
+          "leftlegz":0,
+          "leftlegx":0,
+          "rightlegz":0,
+          "rightlegx":0,
+      }
+    }     
+  },
+  "closed": false,
+  "folders": {}
+}  ;
+  
+}
+
+function animate() {
+  controls.update();
+	
+  head.rotation.x = gcontrols.headx;
+  head.rotation.y = gcontrols.heady;
+  lhand.rotation.z = gcontrols.lefthandz;
+  lhand.rotation.x = gcontrols.lefthandx;
+  rhand.rotation.z = gcontrols.righthandz;
+  rhand.rotation.x = gcontrols.righthandx;
+  lleg.rotation.z = gcontrols.leftlegz;
+  lleg.rotation.x = gcontrols.leftlegx;
+  rleg.rotation.z = gcontrols.rightlegz;
+  rleg.rotation.x = gcontrols.rightlegx;  
+  
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+
+
+
+</script>
+</body>
+
+</html>
